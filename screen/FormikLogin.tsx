@@ -1,26 +1,19 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import { Text, View, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Toast from 'react-native-toast-message';
+import { commonStyles } from '../styles/commonStyles';
+import { COLORS } from '../constants/colors';
 
 type FormValues = {
   fullName: string;
   age: string;
   email: string;
   password: string;
+  isAdmin: boolean;
 };
 
-const COLORS = {
-  background: '#0d0d0f',
-  surface: '#151518',
-  border: '#2a2a2e',
-  textPrimary: '#ffffff',
-  textSecondary: '#b9b9c0',
-  error: '#ff5a6a',
-  fiapPink: '#e91d63',
-  fiapPinkDark: '#c2185b',
-};
 
 const onlyLettersRegex = /^([A-Za-zÀ-ÿ]+)$/;
 
@@ -51,28 +44,46 @@ const validationSchema = Yup.object({
   password: Yup.string()
     .required('Senha precisa de 6+ caracteres.')
     .min(6, 'Senha precisa de 6+ caracteres.'),
+  isAdmin: Yup.boolean(),
 });
 
-export default function FormikLogin() {
+interface FormikLoginProps {
+  onBackToManual: () => void;
+}
+
+export default function FormikLogin({ onBackToManual }: FormikLoginProps) {
   const initialValues: FormValues = {
     fullName: '',
     age: '',
     email: '',
     password: '',
+    isAdmin: false,
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView 
+      contentContainerStyle={commonStyles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={commonStyles.header}>
         <Image
           source={require('../assets/fiap-logo.png')}
-          style={styles.logo}
+          style={commonStyles.logo}
           resizeMode="contain"
           accessibilityLabel="FIAP icon"
         />
       </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Acesse sua conta (Formik + Yup)</Text>
+      <View style={commonStyles.card}>
+        <Text style={commonStyles.title}>Acesse sua conta (Formik + Yup)</Text>
+        
+        <TouchableOpacity
+          onPress={onBackToManual}
+          style={[commonStyles.switchButton]}
+          activeOpacity={0.8}
+        >
+          <Text style={commonStyles.switchText}>Usar formulário manual</Text>
+        </TouchableOpacity>
 
         <Formik
           initialValues={initialValues}
@@ -84,21 +95,21 @@ export default function FormikLogin() {
         >
           {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isValid, setFieldValue }) => (
             <View>
-              <Text style={styles.label}>Nome completo</Text>
+              <Text style={commonStyles.label}>Nome completo</Text>
               <TextInput
                 placeholder="Nome e sobrenome"
                 value={values.fullName}
                 onChangeText={handleChange('fullName')}
                 onBlur={handleBlur('fullName')}
-                style={[styles.input, touched.fullName && errors.fullName && styles.inputError]}
+                style={[commonStyles.input, touched.fullName && errors.fullName && commonStyles.inputError]}
                 placeholderTextColor={COLORS.textSecondary}
                 autoCapitalize="words"
               />
               {touched.fullName && errors.fullName ? (
-                <Text style={styles.errorText}>{errors.fullName}</Text>
+                <Text style={commonStyles.errorText}>{errors.fullName}</Text>
               ) : null}
 
-              <Text style={styles.label}>Idade</Text>
+              <Text style={commonStyles.label}>Idade</Text>
               <TextInput
                 placeholder="Ex.: 20"
                 value={values.age}
@@ -107,17 +118,17 @@ export default function FormikLogin() {
                   setFieldValue('age', digitsOnly);
                 }}
                 onBlur={handleBlur('age')}
-                style={[styles.input, touched.age && errors.age && styles.inputError]}
+                style={[commonStyles.input, touched.age && errors.age && commonStyles.inputError]}
                 placeholderTextColor={COLORS.textSecondary}
                 keyboardType="number-pad"
                 inputMode="numeric"
                 maxLength={3}
               />
               {touched.age && errors.age ? (
-                <Text style={styles.errorText}>{errors.age}</Text>
+                <Text style={commonStyles.errorText}>{errors.age}</Text>
               ) : null}
 
-              <Text style={styles.label}>Email</Text>
+              <Text style={commonStyles.label}>Email</Text>
               <TextInput
                 placeholder="email@exemplo.com"
                 autoCapitalize="none"
@@ -125,133 +136,53 @@ export default function FormikLogin() {
                 value={values.email}
                 onChangeText={handleChange('email')}
                 onBlur={handleBlur('email')}
-                style={[styles.input, touched.email && errors.email && styles.inputError]}
+                style={[commonStyles.input, touched.email && errors.email && commonStyles.inputError]}
                 placeholderTextColor={COLORS.textSecondary}
               />
               {touched.email && errors.email ? (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <Text style={commonStyles.errorText}>{errors.email}</Text>
               ) : null}
 
-              <Text style={styles.label}>Senha</Text>
+              <Text style={commonStyles.label}>Senha</Text>
               <TextInput
                 placeholder="sua senha"
                 secureTextEntry
                 value={values.password}
                 onChangeText={handleChange('password')}
                 onBlur={handleBlur('password')}
-                style={[styles.input, touched.password && errors.password && styles.inputError]}
+                style={[commonStyles.input, touched.password && errors.password && commonStyles.inputError]}
                 placeholderTextColor={COLORS.textSecondary}
               />
               {touched.password && errors.password ? (
-                <Text style={styles.errorText}>{errors.password}</Text>
+                <Text style={commonStyles.errorText}>{errors.password}</Text>
               ) : null}
+
+              <View style={commonStyles.switchContainer}>
+                <Text style={commonStyles.switchLabel}>É administrador?</Text>
+                <TouchableOpacity
+                  onPress={() => setFieldValue('isAdmin', !values.isAdmin)}
+                  style={[commonStyles.switch, values.isAdmin && commonStyles.switchActive]}
+                  activeOpacity={0.8}
+                >
+                  <View style={[commonStyles.switchThumb, values.isAdmin && commonStyles.switchThumbActive]} />
+                </TouchableOpacity>
+              </View>
 
               <TouchableOpacity
                 onPress={() => handleSubmit()}
-                style={[styles.button, !isValid && styles.buttonDisabled]}
+                style={[commonStyles.button, !isValid && commonStyles.buttonDisabled]}
                 activeOpacity={0.8}
                 disabled={!isValid}
               >
-                <Text style={styles.buttonText}>Entrar</Text>
+                <Text style={commonStyles.buttonText}>Entrar</Text>
               </TouchableOpacity>
             </View>
           )}
         </Formik>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: 84,
-    height: 84,
-    borderRadius: 18,
-    marginBottom: 8,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-    color: COLORS.textPrimary,
-  },
-  label: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#1b1b1f',
-    color: COLORS.textPrimary,
-  },
-  inputError: {
-    borderColor: COLORS.error,
-  },
-  errorText: {
-    color: COLORS.error,
-    marginTop: 6,
-    fontSize: 12,
-  },
-  button: {
-    marginTop: 20,
-    backgroundColor: COLORS.fiapPink,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.fiapPinkDark,
-    shadowColor: COLORS.fiapPink,
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: '#3a3a3f',
-    borderColor: COLORS.border,
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 0,
-  },
-  buttonText: {
-    color: COLORS.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-});
 
 

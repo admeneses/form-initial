@@ -1,20 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import { Text, View, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-const COLORS = {
-  background: '#0d0d0f',
-  surface: '#151518',
-  border: '#2a2a2e',
-  textPrimary: '#ffffff',
-  textSecondary: '#b9b9c0',
-  error: '#ff5a6a',
-  fiapPink: '#e91d63',
-  fiapPinkDark: '#c2185b',
-};
+import { commonStyles } from '../styles/commonStyles';
+import { COLORS } from '../constants/colors';
 
 const onlyLettersRegex = /^([A-Za-zÀ-ÿ]+)$/;
 
@@ -48,12 +39,17 @@ const schema = z.object({
   password: z
     .string()
     .min(6, 'Senha precisa de 6+ caracteres.'),
+  isAdmin: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-export default function RHFZodLogin() {
-  const { register, setValue, handleSubmit, formState: { errors, isValid }, trigger } = useForm<FormValues>({
+interface RHFZodLoginProps {
+  onBackToManual: () => void;
+}
+
+export default function RHFZodLogin({ onBackToManual }: RHFZodLoginProps) {
+  const { register, setValue, handleSubmit, formState: { errors, isValid }, trigger, watch } = useForm<FormValues>({
     mode: 'onChange',
     resolver: zodResolver(schema),
     defaultValues: {
@@ -61,6 +57,7 @@ export default function RHFZodLogin() {
       age: '',
       email: '',
       password: '',
+      isAdmin: false,
     },
   });
 
@@ -69,171 +66,110 @@ export default function RHFZodLogin() {
     register('age');
     register('email');
     register('password');
+    register('isAdmin');
   }, [register]);
+
+  const isAdmin = watch('isAdmin');
 
   const onSubmit = () => {
     Toast.show({ type: 'success', text1: 'Login realizado com sucesso!' });
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView 
+      contentContainerStyle={commonStyles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={commonStyles.header}>
         <Image
           source={require('../assets/fiap-logo.png')}
-          style={styles.logo}
+          style={commonStyles.logo}
           resizeMode="contain"
           accessibilityLabel="FIAP icon"
         />
       </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Acesse sua conta (React Hook Form + Zod)</Text>
+      <View style={commonStyles.card}>
+        <Text style={commonStyles.title}>Acesse sua conta (React Hook Form + Zod)</Text>
+        
+        <TouchableOpacity
+          onPress={onBackToManual}
+          style={[commonStyles.switchButton]}
+          activeOpacity={0.8}
+        >
+          <Text style={commonStyles.switchText}>Usar formulário manual</Text>
+        </TouchableOpacity>
 
-        <Text style={styles.label}>Nome completo</Text>
+        <Text style={commonStyles.label}>Nome completo</Text>
         <TextInput
           placeholder="Nome e sobrenome"
           onChangeText={async text => { setValue('fullName', text); await trigger('fullName'); }}
-          style={[styles.input, errors.fullName && styles.inputError]}
+          style={[commonStyles.input, errors.fullName && commonStyles.inputError]}
           placeholderTextColor={COLORS.textSecondary}
           autoCapitalize="words"
         />
-        {errors.fullName && <Text style={styles.errorText}>{errors.fullName.message}</Text>}
+        {errors.fullName && <Text style={commonStyles.errorText}>{errors.fullName.message}</Text>}
 
-        <Text style={styles.label}>Idade</Text>
+        <Text style={commonStyles.label}>Idade</Text>
         <TextInput
           placeholder="Ex.: 20"
           onChangeText={async text => { const digitsOnly = text.replace(/[^0-9]/g, ''); setValue('age', digitsOnly); await trigger('age'); }}
-          style={[styles.input, errors.age && styles.inputError]}
+          style={[commonStyles.input, errors.age && commonStyles.inputError]}
           placeholderTextColor={COLORS.textSecondary}
           keyboardType="number-pad"
           inputMode="numeric"
           maxLength={3}
         />
-        {errors.age && <Text style={styles.errorText}>{errors.age.message}</Text>}
+        {errors.age && <Text style={commonStyles.errorText}>{errors.age.message}</Text>}
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={commonStyles.label}>Email</Text>
         <TextInput
           placeholder="email@exemplo.com"
           autoCapitalize="none"
           keyboardType="email-address"
           onChangeText={async text => { setValue('email', text); await trigger('email'); }}
-          style={[styles.input, errors.email && styles.inputError]}
+          style={[commonStyles.input, errors.email && commonStyles.inputError]}
           placeholderTextColor={COLORS.textSecondary}
         />
-        {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
+        {errors.email && <Text style={commonStyles.errorText}>{errors.email.message}</Text>}
 
-        <Text style={styles.label}>Senha</Text>
+        <Text style={commonStyles.label}>Senha</Text>
         <TextInput
           placeholder="sua senha"
           secureTextEntry
           onChangeText={async text => { setValue('password', text); await trigger('password'); }}
-          style={[styles.input, errors.password && styles.inputError]}
+          style={[commonStyles.input, errors.password && commonStyles.inputError]}
           placeholderTextColor={COLORS.textSecondary}
         />
-        {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
+        {errors.password && <Text style={commonStyles.errorText}>{errors.password.message}</Text>}
+
+        <View style={commonStyles.switchContainer}>
+          <Text style={commonStyles.switchLabel}>É administrador?</Text>
+          <TouchableOpacity
+            onPress={async () => { 
+              const newValue = !isAdmin; 
+              setValue('isAdmin', newValue); 
+              await trigger('isAdmin'); 
+            }}
+            style={[commonStyles.switch, isAdmin && commonStyles.switchActive]}
+            activeOpacity={0.8}
+          >
+            <View style={[commonStyles.switchThumb, isAdmin && commonStyles.switchThumbActive]} />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          style={[styles.button, !isValid && styles.buttonDisabled]}
+          style={[commonStyles.button, !isValid && commonStyles.buttonDisabled]}
           activeOpacity={0.8}
           disabled={!isValid}
         >
-          <Text style={styles.buttonText}>Entrar</Text>
+          <Text style={commonStyles.buttonText}>Entrar</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: 84,
-    height: 84,
-    borderRadius: 18,
-    marginBottom: 8,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-    color: COLORS.textPrimary,
-  },
-  label: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#1b1b1f',
-    color: COLORS.textPrimary,
-  },
-  inputError: {
-    borderColor: COLORS.error,
-  },
-  errorText: {
-    color: COLORS.error,
-    marginTop: 6,
-    fontSize: 12,
-  },
-  button: {
-    marginTop: 20,
-    backgroundColor: COLORS.fiapPink,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.fiapPinkDark,
-    shadowColor: COLORS.fiapPink,
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: '#3a3a3f',
-    borderColor: COLORS.border,
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 0,
-  },
-  buttonText: {
-    color: COLORS.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-});
 
 

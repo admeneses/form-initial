@@ -1,21 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import { Text, View, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useState } from 'react';
 import FormikLogin from './screen/FormikLogin';
 import RHFZodLogin from './screen/RHFZodLogin';
 import Toast from 'react-native-toast-message';
+import { commonStyles } from './styles/commonStyles';
+import { COLORS } from './constants/colors';
 
 export default function App() {
-  const COLORS = {
-    background: '#0d0d0f',
-    surface: '#151518',
-    border: '#2a2a2e',
-    textPrimary: '#ffffff',
-    textSecondary: '#b9b9c0',
-    error: '#ff5a6a',
-    fiapPink: '#e91d63',
-    fiapPinkDark: '#c2185b',
-  };
 
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -25,6 +17,7 @@ export default function App() {
   const [fullNameError, setFullNameError] = useState<string | null>(null);
   const [age, setAge] = useState('');
   const [ageError, setAgeError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const [useFormik, setUseFormik] = useState(false);
   const [useRHF, setUseRHF] = useState(false);
@@ -96,27 +89,9 @@ export default function App() {
 
   if (useFormik) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Image
-            source={require('./assets/fiap-logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-            accessibilityLabel="FIAP icon"
-          />
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.title}>Acesse sua conta</Text>
-          <TouchableOpacity
-            onPress={() => setUseFormik(false)}
-            style={[styles.switchButton]}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.switchText}>Usar formulário manual</Text>
-          </TouchableOpacity>
-        </View>
-        <FormikLogin />
+      <View style={commonStyles.container}>
         <StatusBar style="light" />
+        <FormikLogin onBackToManual={() => setUseFormik(false)} />
         <Toast />
       </View>
     );
@@ -124,222 +99,109 @@ export default function App() {
 
   if (useRHF) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Image
-            source={require('./assets/fiap-logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-            accessibilityLabel="FIAP icon"
-          />
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.title}>Acesse sua conta</Text>
-          <TouchableOpacity
-            onPress={() => setUseRHF(false)}
-            style={[styles.switchButton]}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.switchText}>Usar formulário manual</Text>
-          </TouchableOpacity>
-        </View>
-        <RHFZodLogin />
+      <View style={commonStyles.container}>
         <StatusBar style="light" />
+        <RHFZodLogin onBackToManual={() => setUseRHF(false)} />
         <Toast />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('./assets/fiap-logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-          accessibilityLabel="FIAP icon"
-        />
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.title}>Acesse sua conta</Text>
-        <TouchableOpacity onPress={() => { setUseFormik(true); setUseRHF(false); }} style={[styles.switchButton]} activeOpacity={0.8}>
-          <Text style={styles.switchText}>Usar Formik + Yup</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => { setUseRHF(true); setUseFormik(false); }} style={[styles.switchButton]} activeOpacity={0.8}>
-          <Text style={styles.switchText}>Usar React Hook Form + Zod</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.label}>Nome completo</Text>
-        <TextInput
-          placeholder="Nome e sobrenome"
-          value={fullName}
-          onChangeText={handleFullNameChange}
-          style={[styles.input, fullNameError && styles.inputError]}
-          placeholderTextColor={COLORS.textSecondary}
-          autoCapitalize="words"
-        />
-        {fullNameError && <Text style={styles.errorText}>{fullNameError}</Text>}
-
-        <Text style={styles.label}>Idade</Text>
-        <TextInput
-          placeholder="Ex.: 20"
-          value={age}
-          onChangeText={handleAgeChange}
-          style={[styles.input, ageError && styles.inputError]}
-          placeholderTextColor={COLORS.textSecondary}
-          keyboardType="number-pad"
-          inputMode="numeric"
-          maxLength={3}
-        />
-        {ageError && <Text style={styles.errorText}>{ageError}</Text>}
-
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          placeholder="email@exemplo.com"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={handleEmailChange}
-          style={[styles.input, emailError && styles.inputError]}
-          placeholderTextColor={COLORS.textSecondary}
-        />
-        {emailError && <Text style={styles.errorText}>{emailError}</Text>}
-
-        <Text style={styles.label}>Senha</Text>
-        <TextInput
-          placeholder="sua senha"
-          secureTextEntry
-          value={password}
-          onChangeText={handlePasswordChange}
-          style={[styles.input, passwordError && styles.inputError]}
-          placeholderTextColor={COLORS.textSecondary}
-        />
-        {passwordError && <Text style={styles.errorText}>{passwordError}</Text>}
-
-        <TouchableOpacity
-          onPress={handleSubmit}
-          style={[styles.button, !isValid && styles.buttonDisabled]}
-          activeOpacity={0.8}
-          disabled={!isValid}
-        >
-          <Text style={styles.buttonText}>Entrar</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={commonStyles.container}>
       <StatusBar style="light" />
+      <ScrollView 
+        contentContainerStyle={commonStyles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={commonStyles.header}>
+          <Image
+            source={require('./assets/fiap-logo.png')}
+            style={commonStyles.logo}
+            resizeMode="contain"
+            accessibilityLabel="FIAP icon"
+          />
+        </View>
+        <View style={commonStyles.card}>
+          <Text style={commonStyles.title}>Acesse sua conta</Text>
+          <TouchableOpacity onPress={() => { setUseFormik(true); setUseRHF(false); }} style={[commonStyles.switchButton]} activeOpacity={0.8}>
+            <Text style={commonStyles.switchText}>Usar Formik + Yup</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setUseRHF(true); setUseFormik(false); }} style={[commonStyles.switchButton]} activeOpacity={0.8}>
+            <Text style={commonStyles.switchText}>Usar React Hook Form + Zod</Text>
+          </TouchableOpacity>
+
+          <Text style={commonStyles.label}>Nome completo</Text>
+          <TextInput
+            placeholder="Nome e sobrenome"
+            value={fullName}
+            onChangeText={handleFullNameChange}
+            style={[commonStyles.input, fullNameError && commonStyles.inputError]}
+            placeholderTextColor={COLORS.textSecondary}
+            autoCapitalize="words"
+          />
+          {fullNameError && <Text style={commonStyles.errorText}>{fullNameError}</Text>}
+
+          <Text style={commonStyles.label}>Idade</Text>
+          <TextInput
+            placeholder="Ex.: 20"
+            value={age}
+            onChangeText={handleAgeChange}
+            style={[commonStyles.input, ageError && commonStyles.inputError]}
+            placeholderTextColor={COLORS.textSecondary}
+            keyboardType="number-pad"
+            inputMode="numeric"
+            maxLength={3}
+          />
+          {ageError && <Text style={commonStyles.errorText}>{ageError}</Text>}
+
+          <Text style={commonStyles.label}>Email</Text>
+          <TextInput
+            placeholder="email@exemplo.com"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={handleEmailChange}
+            style={[commonStyles.input, emailError && commonStyles.inputError]}
+            placeholderTextColor={COLORS.textSecondary}
+          />
+          {emailError && <Text style={commonStyles.errorText}>{emailError}</Text>}
+
+          <Text style={commonStyles.label}>Senha</Text>
+          <TextInput
+            placeholder="sua senha"
+            secureTextEntry
+            value={password}
+            onChangeText={handlePasswordChange}
+            style={[commonStyles.input, passwordError && commonStyles.inputError]}
+            placeholderTextColor={COLORS.textSecondary}
+          />
+          {passwordError && <Text style={commonStyles.errorText}>{passwordError}</Text>}
+
+          <View style={commonStyles.switchContainer}>
+            <Text style={commonStyles.switchLabel}>É administrador?</Text>
+            <TouchableOpacity
+              onPress={() => setIsAdmin(!isAdmin)}
+              style={[commonStyles.switch, isAdmin && commonStyles.switchActive]}
+              activeOpacity={0.8}
+            >
+              <View style={[commonStyles.switchThumb, isAdmin && commonStyles.switchThumbActive]} />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            style={[commonStyles.button, !isValid && commonStyles.buttonDisabled]}
+            activeOpacity={0.8}
+            disabled={!isValid}
+          >
+            <Text style={commonStyles.buttonText}>Entrar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
       <Toast />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0d0d0f',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: 84,
-    height: 84,
-    borderRadius: 18,
-    marginBottom: 8,
-  },
-  brand: {
-    color: '#e91d63',
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 2,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#151518',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#2a2a2e',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-    color: '#ffffff',
-  },
-  label: {
-    fontSize: 13,
-    color: '#b9b9c0',
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#2a2a2e',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#1b1b1f',
-    color: '#ffffff',
-  },
-  inputError: {
-    borderColor: '#ff5a6a',
-  },
-  errorText: {
-    color: '#ff5a6a',
-    marginTop: 6,
-    fontSize: 12,
-  },
-  button: {
-    marginTop: 20,
-    backgroundColor: '#e91d63',
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#c2185b',
-    shadowColor: '#e91d63',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: '#3a3a3f',
-    borderColor: '#2a2a2e',
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 0,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  switchButton: {
-    marginTop: 8,
-    marginBottom: 8,
-    backgroundColor: '#26262b',
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2a2a2e',
-  },
-  switchText: {
-    color: '#b9b9c0',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});
